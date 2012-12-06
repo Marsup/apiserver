@@ -24,19 +24,17 @@ module.exports = {
     payloadSource: 'raw',
     method: 'POST',
     before: function(cb) {
-
       var yamlBody = this.requestPayload.body;
       var payload = yaml.load(yamlBody);
-      
 
       this.requestPayload.addons = payload.addons;
       this.requestPayload.envVars = payload.config_vars;
       this.requestPayload.pstable = payload.pstable;
       this.requestPayload.commit = payload.commit;
       this.requestPayload.slugId = payload.slug_id.toString();
-      
+
       cb();
-    }, 
+    },
     after: function(cb) {
       this.responsePayload = (this.responsePayload.rows[0].seq_count).toString();
       cb();
@@ -66,8 +64,8 @@ module.exports = {
 
           var job = dbResult.rows[0];
           if(job.distributed_to) {
-            result = { 
-              host: job.distributed_to, 
+            result = {
+              host: job.distributed_to,
               dyno_id: job.dyno_id,
               rez_id: job.rez_id
             };
@@ -121,6 +119,13 @@ module.exports = {
 
 
       cb();
-    } 
+    }
+  },
+
+  restartCrashedInstance: {
+    routePath: '/internal/restartCrashedInstance',
+    payloadSource: 'body',
+    method: 'POST',
+    okayCode: 200
   }
 };

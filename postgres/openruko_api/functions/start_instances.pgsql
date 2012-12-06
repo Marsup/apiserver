@@ -11,10 +11,10 @@ BEGIN
     WHERE instance.app_id = p_app_id AND NOT instance.retired 
   LOOP
 
-      PERFORM start_instance(p_app_id, v_instance.id);
+    PERFORM start_instance(p_app_id, v_instance.id);
 
   END LOOP;
-  
+
   RETURN 1;
 
 END;

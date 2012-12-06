@@ -12,7 +12,19 @@ exports.updateState = function(appId, dynoId, instanceId, state, cb){
       instanceId: instanceId,
       state: state
     }
-  }, cb);
+  }, function(err) {
+    if (err) return cb(err);
+
+    if (state === 'errored' && instanceId) {
+      request.post({
+        url: base + '/internal/restartCrashedInstance',
+        json: true,
+        body: { instanceId: instanceId }
+      }, cb);
+    } else {
+      cb();
+    }
+  });
 };
 
 exports.getJobs = function(cb){

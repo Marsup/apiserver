@@ -61,7 +61,7 @@ describe('internal provisionJob', function(){
 
   var base = 'http://:' + common.defaultUser.apiKey + '@localhost:5000';
 
-  describe('without a commit', function(){
+  describe('without any commit', function(){
     describe('when restarting an app', function(){
       before(function(done){
         request.post({
@@ -186,19 +186,20 @@ describe('internal provisionJob', function(){
   });
 
   describe('with a commit an instance is started', function(){
-    var instanceId;
+    var startJob ;
     beforeEach(function(done){
       preReceiveMock('myApp', function(){
         dynohostMock.getJobs(function(err, data){
           if(err) return done(err);
           // it should create one "start" job'
           expect(data).to.have.length(1);
-          expect(data[0]).to.be.startJob;
-          expect(data[0].name).to.be.equal('web.1');
-          expect(data[0].env_vars).to.be.deep.equal({
+          startJob = data[0];
+          expect(startJob).to.be.startJob;
+          expect(startJob.name).to.be.equal('web.1');
+          expect(startJob.env_vars).to.be.deep.equal({
             PATH: 'bin:node_modules/.bin:/usr/local/bin:/usr/bin:/bin',
           });
-          expect(data[0].mounts['/app']).to.exist;
+          expect(startJob.mounts['/app']).to.exist;
           done();
         });
       });
@@ -518,6 +519,22 @@ describe('internal provisionJob', function(){
           expect(data).to.have.length(1);
           expect(data[0]).to.be.killJob;
           done();
+        });
+      });
+    });
+
+    describe('when the app is crashed', function() {
+      it('it should restart another instance', function (done) {
+        // Update state of the app to crashed
+        dynohostMock.updateState('myApp', startJob.dyno_id, startJob.instance_id, 'errored', function() {
+          dynohostMock.getJobs(function(err, data) {
+            expect(data).to.have.length(1);
+            expect(data[0].template).to.equal('dyno');
+            expect(data[0].next_action).to.equal('start');
+            expect(data[0].id).to.be.above(startJob.id);
+            expect(data[0].instance_id).to.equal(startJob.instance_id);
+            done();
+          });
         });
       });
     });

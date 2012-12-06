@@ -4,13 +4,11 @@ var _ = require('underscore');
 var async = require('async');
 var hstore = require('node-postgres-hstore');
 var slugSigner = require('./s3url');
-var _ = require('underscore');
 var conf = require('./conf');
 
 var tasks = {};
 
 module.exports =  function(app, options) {
-
 
   var jobsOutstanding = {
     provision: [],
@@ -20,7 +18,7 @@ module.exports =  function(app, options) {
   var awaitingAssignment = [];
   var assignedHosts = [];
 
-  var ctx = { 
+  var ctx = {
     jobsOutstanding: jobsOutstanding,
     awaitingAssignment: awaitingAssignment,
     assignedHosts: assignedHosts,
@@ -79,7 +77,7 @@ var processMount = function(mountUrl) {
   mountUrl = mountUrl.replace('{{S3_BUCKET}}', conf.s3.bucket);
   mountUrl = mountUrl.replace('{{BASE_PROTOCOL}}', conf.apiserver.protocol);
   mountUrl = mountUrl.replace('{{BASE_HOST}}', conf.apiserver.hostname + ':' + conf.apiserver.port);
-  
+
   var s3match = mountUrl.match(s3regex);
 
   if(s3match) {
@@ -177,7 +175,7 @@ tasks.markJobsDistributed = function(cb) {
       return { host: awHost.host, id: task.id };
     });
   }));
-    
+
   if(jobsDistributed.length) {
     async.series(jobsDistributed.map(function(job) {
       return function(cbx) {
@@ -198,9 +196,9 @@ tasks.markJobsDistributed = function(cb) {
 tasks.waitPeriod = function(cb) {
   //give dyno nodes 250ms to check back in for jobs
   var self = this;
-  setTimeout(function() { 
+  setTimeout(function() {
     self.assignedHosts = [];
-    cb(); 
+    cb();
   }, 200);
 };
 

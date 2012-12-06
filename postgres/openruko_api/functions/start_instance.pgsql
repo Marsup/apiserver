@@ -1,6 +1,6 @@
 CREATE OR REPLACE FUNCTION start_instance
 (p_app_id integer, p_instance_id text)
-RETURNS integer AS 
+RETURNS integer AS
 $BODY$
 DECLARE
   v_instance instance%rowtype;
@@ -19,7 +19,6 @@ BEGIN
 
   v_c = array(SELECT id FROM instance);
 
-
   IF v_instance IS NULL THEN
     RAISE EXCEPTION  'hit with inst  searching: %, needles: %', p_instance_id, v_c;
   END IF;
@@ -37,17 +36,17 @@ BEGIN
   v_command =  v_command_arg_parts[1];
   v_command_args = v_command_arg_parts[2:200];
 
-  v_mounts = hstore('/app', 's3get://' || v_bucket || '/slugs/' || p_app_id || 
+  v_mounts = hstore('/app', 's3get://' || v_bucket || '/slugs/' || p_app_id ||
     '_' || v_release.slug_id || '.tgz');
 
-  INSERT INTO provision_job 
+  INSERT INTO provision_job
     (template, name, dyno_id, rez_id, env_vars, attached, pty, command,
       instance_id,
       command_args, logplex_id, mounts, created_at, next_action)
-    VALUES 
+    VALUES
     ('dyno', v_instance.name, v_dyno_id, null, v_release.env,
       false, false, v_command, v_instance.id,
-      v_command_args, v_instance.logplex_id, 
+      v_command_args, v_instance.logplex_id,
       v_mounts, NOW(), 'start');
 
   RETURN 1;
